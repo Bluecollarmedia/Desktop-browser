@@ -30,6 +30,11 @@
         }
       ]
     ],
-    "owner": "abbacohen"
+    "owner": "abbacohen",
+    "extra": {
+      "eas": {
+        "projectId": "642c73ae-4fcd-427e-a02d-9b8d733108ba"
+      }
+    }
   }
 }
