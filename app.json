@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Dave browz",
+    "slug": "dave-browz",
+    "scheme": "davebrowz",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bluecollarmedia.davebrowz",
+      "infoPlist": {
+        "CFBundleDisplayName": "Dave browz",
+        "ITSAppUsesNonExemptEncryption": false,
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "26.0"
+          }
+        }
+      ]
+    ],
+    "owner": "abbacohen"
+  }
+}
