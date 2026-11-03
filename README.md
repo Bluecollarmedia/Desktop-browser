@@ -11,9 +11,14 @@ default and again on every navigation. This is the same switch Safari's "Request
 uses. WebKit then:
 
 - sends the Mac Safari identity (we also append `Version/x Safari/605.1.15`, as Safari does, so
-  the identity doesn't end in `Mobile/…`),
-- ignores the mobile `<meta name="viewport">` hints sites give phones,
-- lays the page out at desktop width.
+  the identity doesn't end in `Mobile/…`).
+
+On iPhone that alone is not enough: WebKit still honors a page's
+`<meta name="viewport" content="width=device-width">`, which tells the page its window is only as wide
+as the phone (402 px), and the site's own responsive CSS then picks its phone layout. The simulator
+test showed this on Amazon, Apple, BBC, YouTube, GitHub and eBay. So every page also gets a
+1280 px wide window (a common laptop width) by setting its viewport to `width=1280`. The site's CSS
+then chooses its own desktop layout. This also removes `user-scalable=no`, so pinch always works.
 
 Nothing is faked: no CSS changes and no page scaling tricks. If a site has no desktop version, you
 see whatever it sends.

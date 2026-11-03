@@ -50,6 +50,9 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
     config.applicationNameForUserAgent = "Version/\(major).0 Safari/605.1.15"
     config.allowsInlineMediaPlayback = true
     config.websiteDataStore = .default()
+    config.userContentController.addUserScript(
+      WKUserScript(source: Self.desktopWindowScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+    )
 
     webView = WKWebView(frame: .zero, configuration: config)
     super.init(appContext: appContext)
@@ -80,6 +83,51 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
       },
     ]
   }
+
+  /// Width of the browser window the page is given, in CSS pixels: a common laptop window.
+  static let desktopWidth = 1280
+
+  /// On iPhone, WebKit's desktop mode changes the identity but still honors a page's
+  /// `<meta name="viewport" content="width=device-width">`, which tells the page the window
+  /// is only as wide as the phone (402 px), so its own responsive CSS picks the phone layout.
+  /// This gives every page a 1280 px wide window instead, like a laptop browser window.
+  /// The site's own CSS then chooses its desktop layout. Nothing on the page is restyled or
+  /// scaled by us; pages without a desktop design still show exactly what they send.
+  /// It also drops "user-scalable=no", so pinch-to-zoom always works.
+  static let desktopWindowScript = """
+  (function () {
+    var CONTENT = 'width=\(DesktopWebView.desktopWidth)';
+    function isViewport(node) {
+      return node && node.nodeName === 'META' && (node.getAttribute('name') || '').toLowerCase() === 'viewport';
+    }
+    function fix(meta) {
+      if (meta.getAttribute('content') !== CONTENT) meta.setAttribute('content', CONTENT);
+    }
+    var ours = document.createElement('meta');
+    ours.setAttribute('name', 'viewport');
+    ours.setAttribute('content', CONTENT);
+    (document.head || document.documentElement).appendChild(ours);
+    new MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i++) {
+        var r = records[i];
+        if (r.type === 'attributes') {
+          if (isViewport(r.target)) fix(r.target);
+          continue;
+        }
+        for (var j = 0; j < r.addedNodes.length; j++) {
+          var n = r.addedNodes[j];
+          if (isViewport(n)) fix(n);
+          else if (n.nodeType === 1 && n.querySelectorAll) {
+            var metas = n.querySelectorAll('meta');
+            for (var k = 0; k < metas.length; k++) if (isViewport(metas[k])) fix(metas[k]);
+          }
+        }
+      }
+    }).observe(document.documentElement, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['content', 'name']
+    });
+  })();
+  """
 
   public required init?(coder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
@@ -394,7 +442,7 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
     testReported = true
     DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in
       self?.writeTestReport(stage: "loaded")
-      guard self?.testEnv["DESKTOP_TEST_ZOOM"] != nil else { return }
+      guard let zoom = self?.testEnv["DESKTOP_TEST_ZOOM"], !zoom.isEmpty else { return }
       DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
         _ = self?.zoomStep(1)
         _ = self?.zoomStep(1)
