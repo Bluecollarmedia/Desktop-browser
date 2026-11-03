@@ -17,6 +17,15 @@
           "UIInterfaceOrientationPortrait",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
+        ],
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "Web links",
+            "CFBundleURLSchemes": [
+              "http",
+              "https"
+            ]
+          }
         ]
       }
     },
