@@ -91,6 +91,7 @@ jobs:
             cp "$DATA/Documents/desktop-test.jsonl" "results/$NAME.jsonl" 2>/dev/null || echo '{"error":"no report"}' > "results/$NAME.jsonl"
             echo "=== $NAME"; cat "results/$NAME.jsonl"
           }
+          run_site whatsapp https://web.whatsapp.com/ 1
           run_site wikipedia https://en.wikipedia.org/wiki/IPhone 1
           run_site amazon https://www.amazon.com/
           run_site youtube https://www.youtube.com/

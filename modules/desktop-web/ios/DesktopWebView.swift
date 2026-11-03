@@ -476,7 +476,13 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
       dpr: window.devicePixelRatio,
       viewportMeta: (document.querySelector('meta[name=viewport]') || {}).content || null,
       href: location.href,
-      title: document.title
+      title: document.title,
+      hasServiceWorker: 'serviceWorker' in navigator,
+      hasSharedWorker: typeof SharedWorker !== 'undefined',
+      hasIndexedDB: typeof indexedDB !== 'undefined',
+      hasWebAssembly: typeof WebAssembly !== 'undefined',
+      hasWebSocket: typeof WebSocket !== 'undefined',
+      text: (document.body && document.body.innerText || '').slice(0, 300)
     })
     """
     let sv = webView.scrollView
