@@ -35,6 +35,8 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
   private var lastScale: CGFloat = 0
   private var lastReportedPercent: Double = -1
   private var autoFitCount = 0
+  private var zoomAnimating = false
+  private var zoomAnimationID = 0
 
   // Automated simulator test only (never set on a phone).
   private let testEnv = ProcessInfo.processInfo.environment
@@ -257,9 +259,17 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
       self.emitZoom()
     }
     if animated {
+      zoomAnimating = true
+      zoomAnimationID += 1
+      let id = zoomAnimationID
       UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut]) {
         sv.setZoomScale(target, animated: false)
-      } completion: { _ in finish() }
+      } completion: { [weak self] _ in
+        // Only the latest animation finishes up, so quick repeated taps add up.
+        guard let self, id == self.zoomAnimationID else { return }
+        self.zoomAnimating = false
+        finish()
+      }
     } else {
       sv.setZoomScale(target, animated: false)
       finish()
@@ -270,7 +280,8 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
   func zoomStep(_ direction: Int) -> Double {
     guard let fit = fitScale() else { return 100 }
     let sv = webView.scrollView
-    let current = currentPercent()
+    // While a zoom animation is still running, step from where it is heading.
+    let current = zoomAnimating ? targetPercent : currentPercent()
     var next = direction > 0
       ? (floor(current / 25 + 0.001) + 1) * 25
       : (ceil(current / 25 - 0.001) - 1) * 25
@@ -443,7 +454,7 @@ public final class DesktopWebView: ExpoView, WKNavigationDelegate, WKUIDelegate 
     DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in
       self?.writeTestReport(stage: "loaded")
       guard let zoom = self?.testEnv["DESKTOP_TEST_ZOOM"], !zoom.isEmpty else { return }
-      DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
         _ = self?.zoomStep(1)
         _ = self?.zoomStep(1)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

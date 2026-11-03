@@ -85,7 +85,7 @@ jobs:
             sleep 30
             xcrun simctl io "$DEVICE" screenshot --type=jpeg "results/$NAME.jpg"
             if [ -n "$ZOOM" ]; then
-              sleep 12
+              sleep 20
               xcrun simctl io "$DEVICE" screenshot --type=jpeg "results/$NAME-zoomed.jpg"
             fi
             cp "$DATA/Documents/desktop-test.jsonl" "results/$NAME.jsonl" 2>/dev/null || echo '{"error":"no report"}' > "results/$NAME.jsonl"
